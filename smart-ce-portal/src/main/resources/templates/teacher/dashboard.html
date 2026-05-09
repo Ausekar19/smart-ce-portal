@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Teacher Dashboard')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="flex-grow-1 container-fluid px-4 py-4">
+
+    <div class="ce-welcome-banner rounded-4 p-4 mb-4 d-flex align-items-center gap-3"
+         style="background: linear-gradient(135deg,#fd7e14,#e55a00);">
+        <div class="ce-icon-circle" style="background:rgba(255,255,255,0.2);">
+            <i class="bi bi-person-badge-fill fs-2 text-white"></i>
+        </div>
+        <div>
+            <h4 class="mb-0 text-white fw-bold">
+                Welcome, <span th:text="${teacher.fullName}">Teacher</span>
+            </h4>
+            <small class="text-white opacity-75">Faculty Dashboard</small>
+        </div>
+        <div class="ms-auto">
+            <a th:href="@{/teacher/test/new}" class="btn btn-light fw-semibold">
+                <i class="bi bi-plus-circle me-1"></i> Create New Test
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
+                <div class="fs-1 fw-bold text-warning" th:text="${total}">0</div>
+                <div class="text-muted small">Total Tests</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
+                <div class="fs-1 fw-bold text-primary" th:text="${upcoming}">0</div>
+                <div class="text-muted small">Upcoming</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
+                <div class="fs-1 fw-bold text-success" th:text="${completed}">0</div>
+                <div class="text-muted small">Completed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash -->
+    <div th:if="${msg}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${msg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Tests Table -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white border-0 py-3 px-4 rounded-top-4">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-list-check me-2"></i>My Tests</h6>
+        </div>
+        <div class="card-body p-0">
+            <div th:if="${#lists.isEmpty(tests)}" class="text-center py-5 text-muted">
+                <i class="bi bi-journal-x fs-1 d-block mb-2 opacity-25"></i>
+                No tests yet. <a th:href="@{/teacher/test/new}">Create one now.</a>
+            </div>
+            <div class="table-responsive" th:unless="${#lists.isEmpty(tests)}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Scheduled</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="t : ${tests}">
+                            <td class="fw-semibold" th:text="${t.title}">Title</td>
+                            <td th:text="${t.subject}">Subject</td>
+                            <td>
+                                <span th:text="${#temporals.format(t.scheduledDateTime,'dd MMM yyyy, hh:mm a')}">Date</span>
+                            </td>
+                            <td th:text="${t.durationMinutes} + ' min'">60 min</td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${t.status.name() == 'PUBLISHED'} ? 'bg-success' :
+                                                      (${t.status.name() == 'SCHEDULED'} ? 'bg-primary' :
+                                                      (${t.status.name() == 'COMPLETED'} ? 'bg-secondary' : 'bg-danger'))"
+                                      th:text="${t.status}">Status</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a th:href="@{/teacher/test/{id}/questions(id=${t.id})}"
+                                       class="btn btn-sm btn-outline-primary" title="Manage Questions">
+                                        <i class="bi bi-question-circle"></i>
+                                    </a>
+                                    <a th:href="@{/teacher/test/{id}/results(id=${t.id})}"
+                                       class="btn btn-sm btn-outline-success" title="View Results">
+                                        <i class="bi bi-bar-chart"></i>
+                                    </a>
+                                    <a th:href="@{/teacher/test/{id}/edit(id=${t.id})}"
+                                       class="btn btn-sm btn-outline-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form th:action="@{/teacher/test/{id}/delete(id=${t.id})}"
+                                          method="post" class="d-inline"
+                                          onsubmit="return confirm('Delete this test?')">
+                                        <button class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Login')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+    <div class="card shadow-lg border-0 rounded-4" style="width:420px;">
+        <div class="card-body p-5">
+
+            <!-- Logo / Title -->
+            <div class="text-center mb-4">
+                <div class="ce-icon-circle mx-auto mb-3">
+                    <i class="bi bi-mortarboard-fill fs-2 text-white"></i>
+                </div>
+                <h4 class="fw-bold text-dark">Smart CE Portal</h4>
+                <small class="text-muted">Fergusson College, Pune &mdash; Estd. 1885</small>
+            </div>
+
+            <!-- Alerts -->
+            <div th:if="${error}"   class="alert alert-danger  py-2" th:text="${error}"></div>
+            <div th:if="${msg}"     class="alert alert-success py-2" th:text="${msg}"></div>
+
+            <!-- Login Form -->
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">PRN / Employee ID</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" class="form-control"
+                               placeholder="Enter your PRN or ID" required autofocus/>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" class="form-control"
+                               placeholder="Enter your password" required/>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                </button>
+            </form>
+
+            <hr class="my-4"/>
+
+            <!-- Register Links -->
+            <div class="text-center">
+                <p class="text-muted mb-2 small">New user? Register below:</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a th:href="@{/register/student}"
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-person-plus"></i> Student Register
+                    </a>
+                    <a th:href="@{/register/teacher}"
+                       class="btn btn-outline-warning btn-sm">
+                        <i class="bi bi-person-badge"></i> Teacher Register
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

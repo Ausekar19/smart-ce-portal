@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Teacher Register')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+    <div class="card shadow-lg border-0 rounded-4" style="width:460px;">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                <div class="ce-icon-circle mx-auto mb-3" style="background:#fd7e14;">
+                    <i class="bi bi-person-badge-fill fs-2 text-white"></i>
+                </div>
+                <h5 class="fw-bold">Teacher Registration</h5>
+                <small class="text-muted">For faculty members only</small>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
+
+            <form th:action="@{/register/teacher}" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Full Name</label>
+                    <input type="text" name="fullName" class="form-control"
+                           placeholder="e.g. Prof. Rahul Deshmukh" required/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Employee ID (Username)</label>
+                    <input type="text" name="username" class="form-control"
+                           placeholder="e.g. FC-EMP-0042" required/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">College Email</label>
+                    <input type="email" name="email" class="form-control"
+                           placeholder="teacher@fergusson.edu.in" required/>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Password</label>
+                    <input type="password" name="password" class="form-control"
+                           placeholder="Choose a strong password" required/>
+                </div>
+                <button type="submit" class="btn ce-btn-teacher w-100 py-2 fw-semibold">
+                    <i class="bi bi-person-check me-1"></i> Register as Teacher
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <small>Already registered? <a th:href="@{/login}">Login here</a></small>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

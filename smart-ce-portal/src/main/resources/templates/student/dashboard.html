@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Student Dashboard')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="flex-grow-1 container-fluid px-4 py-4">
+
+    <!-- Welcome Banner -->
+    <div class="ce-welcome-banner rounded-4 p-4 mb-4 d-flex align-items-center gap-3">
+        <div class="ce-icon-circle" style="background:rgba(255,255,255,0.2);">
+            <i class="bi bi-person-circle fs-2 text-white"></i>
+        </div>
+        <div>
+            <h4 class="mb-0 text-white fw-bold">
+                Welcome back, <span th:text="${student.fullName}">Student</span>!
+            </h4>
+            <small class="text-white opacity-75">
+                PRN: <span th:text="${student.username}"></span>
+            </small>
+        </div>
+        <div class="ms-auto text-white opacity-75 text-end d-none d-md-block">
+            <i class="bi bi-calendar3 me-1"></i>
+            <span id="currentDateTime"></span>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${msg}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        <span th:text="${msg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
+                <div class="fs-1 fw-bold text-primary" th:text="${#lists.size(upcomingTests)}">0</div>
+                <div class="text-muted small">Upcoming Tests</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
+                <div class="fs-1 fw-bold text-success" th:text="${#lists.size(pastAttempts)}">0</div>
+                <div class="text-muted small">Tests Completed</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
+                <div class="fs-1 fw-bold text-warning">
+                 
+    <span th:text="${0}">0</span>
+</div>
+                </div>
+                <div class="text-muted small">Avg Score</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3">
+                <div class="fs-1 fw-bold text-danger">
+                    <span th:text="${maxSwitches}">3</span>
+                </div>
+                <div class="text-muted small">Max Tab Switches</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- ── UPCOMING TESTS ─────────────────────────────────────────────── -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-primary text-white rounded-top-4 border-0 py-3 px-4">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-calendar-event me-2"></i>Upcoming Tests
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div th:if="${#lists.isEmpty(upcomingTests)}"
+                         class="text-center text-muted py-5">
+                        <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
+                        No upcoming tests scheduled.
+                    </div>
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(upcomingTests)}">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Date &amp; Time</th>
+                                    <th>Duration</th>
+                                    <th>Marks</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="test : ${upcomingTests}">
+                                    <td>
+                                        <div class="fw-semibold" th:text="${test.title}">Test</div>
+                                        <small class="text-muted" th:text="${test.subject}">Subj</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary"
+                                              th:text="${#temporals.format(test.scheduledDateTime,'dd MMM yyyy')}">
+                                        </span><br/>
+                                        <small th:text="${#temporals.format(test.scheduledDateTime,'hh:mm a')}"></small>
+                                    </td>
+                                    <td th:text="${test.durationMinutes} + ' min'">60 min</td>
+                                    <td th:text="${test.totalMarks}">50</td>
+                                    <td>
+                                        <a th:href="@{/student/exam/{id}/start(id=${test.id})}"
+                                           class="btn btn-sm btn-primary"
+                                           onclick="return confirmStart()">
+                                            <i class="bi bi-play-fill"></i> Start
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── COMPLETED / PAST TESTS ─────────────────────────────────────── -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-success text-white rounded-top-4 border-0 py-3 px-4">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-patch-check me-2"></i>Completed Tests
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div th:if="${#lists.isEmpty(pastAttempts)}"
+                         class="text-center text-muted py-5">
+                        <i class="bi bi-journal-x fs-1 d-block mb-2 opacity-25"></i>
+                        No tests completed yet.
+                    </div>
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(pastAttempts)}">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Date Given</th>
+                                    <th>Score</th>
+                                    <th>Result</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="attempt : ${pastAttempts}">
+                                    <td>
+                                        <div class="fw-semibold" th:text="${attempt.test.title}">Test</div>
+                                        <small class="text-muted" th:text="${attempt.test.subject}">Subj</small>
+                                    </td>
+                                    <td>
+                                        <small th:text="${#temporals.format(attempt.endTime,'dd MMM yyyy')}">
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold"
+                                              th:text="${#numbers.formatDecimal(attempt.score,1,1)}">0</span>
+                                        <small class="text-muted">
+                                            / <span th:text="${attempt.test.totalMarks}">50</span>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span th:if="${attempt.autoSubmitted}"
+                                              class="badge bg-danger">Auto-submitted</span>
+                                        <span th:unless="${attempt.autoSubmitted}"
+                                              class="badge bg-success">Submitted</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/student/result/{id}(id=${attempt.id})}"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /row -->
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+<script>
+    // Show current date/time
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('currentDateTime').textContent =
+            now.toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Confirm before starting exam
+    function confirmStart() {
+        return confirm(
+            "⚠️  EXAM RULES\n\n" +
+            "1. Do NOT switch tabs or windows.\n" +
+            "2. Do NOT press Alt+Tab or minimize.\n" +
+            "3. Each tab switch will be recorded.\n" +
+            "4. After " + document.querySelector('[data-max-switches]')?.dataset?.maxSwitches + " violations, your exam will be auto-submitted.\n\n" +
+            "Are you ready to start?"
+        );
+    }
+</script>
+</body>
+</html>

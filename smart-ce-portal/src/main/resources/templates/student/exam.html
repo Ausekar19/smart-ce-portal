@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Exam')}">
+<style>
+    /* Prevent text selection during exam */
+    body { user-select: none; -webkit-user-select: none; }
+</style>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<!-- No navbar during exam – distraction free -->
+
+<!-- ── Exam Header ─────────────────────────────────────────────────────── -->
+<header class="ce-exam-header px-4 py-3 d-flex align-items-center justify-content-between">
+    <div>
+        <h5 class="mb-0 text-white fw-bold" th:text="${test.title}">Test Title</h5>
+        <small class="text-white opacity-75" th:text="${test.subject}">Subject</small>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <!-- Tab switch warning badge -->
+        <div class="ce-switch-badge" id="switchBadge">
+            <i class="bi bi-eye me-1"></i>
+            Switches: <span id="switchCount">0</span> / <span th:text="${maxSwitches}">3</span>
+        </div>
+        <!-- Countdown timer -->
+        <div class="ce-timer" id="examTimer">
+            <i class="bi bi-clock me-1"></i>
+            <span id="timerDisplay">--:--</span>
+        </div>
+    </div>
+</header>
+
+<!-- ── Tab Switch Warning Modal ───────────────────────────────────────── -->
+<div class="modal fade" id="switchWarningModal" data-bs-backdrop="static"
+     data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Tab Switch Detected!
+                </h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="fs-1 text-danger mb-3">⚠️</div>
+                <p class="fw-bold" id="switchWarningMsg">You switched tabs!</p>
+                <p class="text-muted" id="switchCountMsg"></p>
+                <div class="alert alert-warning py-2 mb-0">
+                    Switching tabs again may result in automatic exam submission.
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-danger px-4"
+                        id="switchWarningOkBtn">
+                    I Understand – Return to Exam
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Auto Submit Modal ──────────────────────────────────────────────── -->
+<div class="modal fade" id="autoSubmitModal" data-bs-backdrop="static"
+     data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-x-octagon-fill me-2"></i>Exam Auto-Submitted
+                </h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="fs-1 mb-3">🚫</div>
+                <p class="fw-bold text-danger">
+                    You have exceeded the maximum number of tab switches.
+                </p>
+                <p class="text-muted">
+                    Your exam has been automatically submitted with your current answers.
+                    This violation has been recorded.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <a id="autoSubmitLink" href="#" class="btn btn-danger px-4">
+                    View My Result
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Submit Confirm Modal ────────────────────────────────────────────── -->
+<div class="modal fade" id="submitConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-send-check me-2"></i>Submit Exam?
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <strong>Are you sure?</strong> Once submitted, you cannot change your answers.
+                </div>
+                <div id="submitSummary" class="small text-muted"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger"
+                        id="confirmSubmitBtn">
+                    <i class="bi bi-send-check me-1"></i>Submit Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Main Exam Body ─────────────────────────────────────────────────── -->
+<main class="flex-grow-1 container py-4">
+
+    <form id="examForm"
+          th:action="@{/student/exam/{id}/submit(id=${attempt.id})}"
+          method="post">
+        <!-- CSRF Token -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <!-- Question Navigator -->
+        <div class="row g-3">
+            <!-- Questions Panel -->
+            <div class="col-lg-9">
+                <div th:each="q, qStat : ${questions}"
+                     th:id="'question-' + ${q.id}"
+                     class="card border-0 shadow-sm rounded-4 mb-3 question-card"
+                     th:classappend="${qStat.first} ? '' : 'd-none'">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary">
+                                Q<span th:text="${qStat.count}">1</span>
+                                of <span th:text="${#lists.size(questions)}">10</span>
+                            </span>
+                            <span class="badge bg-light text-dark">
+                                <i class="bi bi-star me-1"></i>
+                                <span th:text="${q.marks}">1</span> mark(s)
+                            </span>
+                        </div>
+
+                        <p class="fw-semibold fs-5 mb-4" th:text="${q.questionText}">
+                            Question text here
+                        </p>
+
+                        <div class="d-flex flex-column gap-2">
+                            <label th:each="opt : ${ {'A','B','C','D'} }"
+                                   class="ce-option-label">
+                                <input type="radio"
+                                       th:name="'q_' + ${q.id}"
+                                       th:value="${opt}"
+                                       class="ce-option-radio"
+                                       th:attr="data-qid=${q.id}"/>
+                                <span class="ce-option-letter" th:text="${opt}">A</span>
+                                <span th:switch="${opt}">
+                                    <span th:case="'A'" th:text="${q.optionA}">Option A</span>
+                                    <span th:case="'B'" th:text="${q.optionB}">Option B</span>
+                                    <span th:case="'C'" th:text="${q.optionC}">Option C</span>
+                                    <span th:case="'D'" th:text="${q.optionD}">Option D</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    th:if="${!qStat.first}"
+                                    th:onclick="'showQuestion(\'' + ${questions[qStat.index - 1].id} + '\')'">
+                                <i class="bi bi-arrow-left me-1"></i> Previous
+                            </button>
+                            <div th:if="${qStat.first}"></div>
+                            <button type="button" class="btn btn-primary btn-sm"
+                                    th:unless="${qStat.last}"
+                                    th:onclick="'showQuestion(\'' + ${questions[qStat.index + 1].id} + '\')'">
+                                Next <i class="bi bi-arrow-right ms-1"></i>
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm"
+                                    th:if="${qStat.last}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#submitConfirmModal"
+                                    onclick="buildSubmitSummary()">
+                                <i class="bi bi-send-check me-1"></i> Review & Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Navigator Sidebar -->
+            <div class="col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top:80px;">
+                    <div class="card-header border-0 bg-white rounded-top-4 py-3">
+                        <h6 class="mb-0 fw-bold">Question Navigator</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button"
+                                    th:each="q, qStat : ${questions}"
+                                    th:id="'nav-' + ${q.id}"
+                                    class="btn btn-outline-secondary btn-sm ce-nav-btn"
+                                    th:text="${qStat.count}"
+                                    th:onclick="'showQuestion(\'' + ${q.id} + '\')'">1
+                            </button>
+                        </div>
+                        <hr/>
+                        <div class="d-flex flex-column gap-1 small text-muted">
+                            <span><span class="badge bg-success me-1">&nbsp;</span> Answered</span>
+                            <span><span class="badge bg-secondary me-1">&nbsp;</span> Not Answered</span>
+                            <span><span class="badge bg-primary me-1">&nbsp;</span> Current</span>
+                        </div>
+                        <button type="button"
+                                class="btn btn-success w-100 mt-3"
+                                data-bs-toggle="modal"
+                                data-bs-target="#submitConfirmModal"
+                                onclick="buildSubmitSummary()">
+                            <i class="bi bi-send-check me-1"></i> Submit Exam
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+
+<script th:inline="javascript">
+    // ── Config (injected from server) ──────────────────────────────────────
+    const ATTEMPT_ID   = /*[[${attempt.id}]]*/ 0;
+    const MAX_SWITCHES = /*[[${maxSwitches}]]*/ 3;
+    const DURATION_MIN = /*[[${test.durationMinutes}]]*/ 60;
+    const RESULT_URL   = /*[[@{/student/result/}]]*/ '/student/result/' + ATTEMPT_ID;
+    const CSRF_TOKEN   = document.querySelector('[name="_csrf"]')?.value;
+    const CSRF_HEADER  = 'X-CSRF-Token';
+
+    // ── Question Navigation ────────────────────────────────────────────────
+    let currentQId = null;
+
+    function showQuestion(qid) {
+        document.querySelectorAll('.question-card').forEach(c => c.classList.add('d-none'));
+        document.getElementById('question-' + qid)?.classList.remove('d-none');
+
+        document.querySelectorAll('.ce-nav-btn').forEach(b => {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-outline-secondary');
+        });
+        const navBtn = document.getElementById('nav-' + qid);
+        if (navBtn) {
+            navBtn.classList.remove('btn-outline-secondary');
+            navBtn.classList.add('btn-primary');
+        }
+        currentQId = qid;
+    }
+
+    // Initialise first question
+    const firstQ = document.querySelector('.question-card');
+    if (firstQ) showQuestion(firstQ.id.replace('question-', ''));
+
+    // Colour navigator when answered
+    document.querySelectorAll('.ce-option-radio').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const btn = document.getElementById('nav-' + radio.dataset.qid);
+            if (btn) {
+                btn.classList.remove('btn-outline-secondary', 'btn-primary');
+                btn.classList.add('btn-success');
+            }
+        });
+    });
+
+    // ── Timer ──────────────────────────────────────────────────────────────
+    let secondsLeft = DURATION_MIN * 60;
+
+    function updateTimer() {
+        const m = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+        const s = String(secondsLeft % 60).padStart(2, '0');
+        document.getElementById('timerDisplay').textContent = m + ':' + s;
+
+        if (secondsLeft <= 300) {   // last 5 minutes: red
+            document.getElementById('examTimer').classList.add('ce-timer-danger');
+        }
+        if (secondsLeft <= 0) {
+            clearInterval(timerInterval);
+            autoSubmit('Time is up! Your exam has been submitted automatically.');
+            return;
+        }
+        secondsLeft--;
+    }
+
+    const timerInterval = setInterval(updateTimer, 1000);
+    updateTimer();
+
+    // ── Tab Switch Prevention ──────────────────────────────────────────────
+    let switchCount = 0;
+    let switchModal  = null;
+    let autoSubModal = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        switchModal  = new bootstrap.Modal(document.getElementById('switchWarningModal'));
+        autoSubModal = new bootstrap.Modal(document.getElementById('autoSubmitModal'));
+
+        document.getElementById('switchWarningOkBtn').addEventListener('click', () => {
+            switchModal.hide();
+        });
+
+        document.getElementById('autoSubmitLink').href =
+            '/student/result/' + ATTEMPT_ID;
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            // Notify server
+            fetch('/student/exam/' + ATTEMPT_ID + '/tabswitch', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF_TOKEN }
+            })
+            .then(r => r.json())
+            .then(data => {
+                switchCount = data.switchCount;
+                document.getElementById('switchCount').textContent = switchCount;
+
+                if (data.autoSubmitted) {
+                    autoSubmit('Auto-submitted due to too many tab switches.');
+                } else {
+                    const remaining = MAX_SWITCHES - switchCount;
+                    document.getElementById('switchWarningMsg').textContent =
+                        `⚠️ Tab switch detected! (${switchCount} of ${MAX_SWITCHES})`;
+                    document.getElementById('switchCountMsg').textContent =
+                        remaining > 0
+                            ? `You have ${remaining} warning(s) remaining before auto-submission.`
+                            : `Next switch will auto-submit your exam!`;
+                    switchModal.show();
+                }
+            })
+            .catch(() => {
+                // Fallback: local count if network fails
+                switchCount++;
+                document.getElementById('switchCount').textContent = switchCount;
+            });
+        }
+    });
+
+    // Block right-click
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    // Block copy / paste / cut
+    ['copy','cut','paste'].forEach(evt =>
+        document.addEventListener(evt, e => e.preventDefault())
+    );
+
+    // Block common key combos
+    document.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && ['c','v','x','u','s','p','a'].includes(e.key.toLowerCase())) {
+            e.preventDefault();
+        }
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+            e.preventDefault();
+        }
+    });
+
+    // Warn before page unload
+    window.addEventListener('beforeunload', e => {
+        e.preventDefault();
+        e.returnValue = 'Leaving will submit your exam!';
+    });
+
+    // ── Submit Helpers ─────────────────────────────────────────────────────
+    function buildSubmitSummary() {
+        const total    = document.querySelectorAll('.question-card').length;
+        const answered = document.querySelectorAll('input[type=radio]:checked').length;
+        document.getElementById('submitSummary').innerHTML =
+            `<strong>Answered:</strong> ${answered} / ${total} &nbsp;|&nbsp;
+             <strong>Unattempted:</strong> ${total - answered}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('confirmSubmitBtn')?.addEventListener('click', () => {
+            window.removeEventListener('beforeunload', () => {});
+            clearInterval(timerInterval);
+            document.getElementById('examForm').submit();
+        });
+    });
+
+    function autoSubmit(msg) {
+        clearInterval(timerInterval);
+        window.removeEventListener('beforeunload', () => {});
+        if (autoSubModal) {
+            autoSubModal.show();
+        }
+        // Small delay then auto-redirect
+        setTimeout(() => {
+            document.getElementById('examForm').submit();
+        }, 4000);
+    }
+</script>
+
+<!-- Bootstrap JS already in layout – include separately here since no layout wrapper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="/css/style.css"/>
+</body>
+</html>

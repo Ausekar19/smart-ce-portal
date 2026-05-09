@@ -1,0 +1,210 @@
+/* ─── Smart CE Portal – style.css ─────────────────────────────────────────── */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --ce-primary:   #0d6efd;
+    --ce-orange:    #fd7e14;
+    --ce-dark:      #212529;
+    --ce-success:   #198754;
+    --ce-surface:   #f8f9fa;
+    --ce-border:    #dee2e6;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f2f5;
+}
+
+/* ── Navbar ────────────────────────────────────────────────────────────────── */
+.ce-navbar {
+    background: linear-gradient(135deg, #1a1f36 0%, #0d6efd 100%);
+    box-shadow: 0 2px 12px rgba(0,0,0,.18);
+}
+
+/* ── Welcome Banner ────────────────────────────────────────────────────────── */
+.ce-welcome-banner {
+    background: linear-gradient(135deg, var(--ce-primary), #4a90d9);
+    min-height: 90px;
+}
+
+/* ── Icon Circle ───────────────────────────────────────────────────────────── */
+.ce-icon-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
+.card {
+    transition: box-shadow .2s ease;
+}
+.card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,.09) !important;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+.ce-footer {
+    background: #fff;
+    border-top: 1px solid var(--ce-border);
+}
+
+/* ── Login / Register Form ─────────────────────────────────────────────────── */
+.ce-btn-teacher {
+    background: var(--ce-orange);
+    color: #fff;
+    border: none;
+}
+.ce-btn-teacher:hover {
+    background: #e8650a;
+    color: #fff;
+}
+
+/* ── Exam Header ───────────────────────────────────────────────────────────── */
+.ce-exam-header {
+    background: linear-gradient(135deg, #1a1f36, #0d6efd);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    min-height: 60px;
+}
+
+/* ── Timer ─────────────────────────────────────────────────────────────────── */
+.ce-timer {
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: .95rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    transition: background .3s;
+}
+.ce-timer-danger {
+    background: rgba(220,53,69,.7) !important;
+    animation: pulse 1s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .7; }
+}
+
+/* ── Tab Switch Badge ──────────────────────────────────────────────────────── */
+.ce-switch-badge {
+    background: rgba(255,193,7,.2);
+    color: #ffe082;
+    border: 1px solid rgba(255,193,7,.4);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+/* ── Exam Option Labels ────────────────────────────────────────────────────── */
+.ce-option-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 2px solid var(--ce-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .18s ease;
+    background: #fff;
+}
+.ce-option-label:hover {
+    border-color: var(--ce-primary);
+    background: #f0f5ff;
+}
+.ce-option-label:has(.ce-option-radio:checked) {
+    border-color: var(--ce-primary);
+    background: #e8f0fe;
+}
+.ce-option-radio {
+    display: none;
+}
+.ce-option-letter {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+.ce-option-label:has(.ce-option-radio:checked) .ce-option-letter {
+    background: var(--ce-primary);
+    color: #fff;
+}
+
+/* ── Question Nav Button ───────────────────────────────────────────────────── */
+.ce-nav-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 8px !important;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+/* ── Teacher: Option Display in Questions List ─────────────────────────────── */
+.ce-option-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: .85rem;
+    border: 1px solid var(--ce-border);
+}
+.ce-option-correct {
+    background: #d1e7dd;
+    border-color: #a3cfbb;
+}
+
+/* ── Score Ring (Result page) ──────────────────────────────────────────────── */
+.ce-score-ring {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 8px solid #e9ecef;
+    border-top-color: var(--ce-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: spin-once 1s ease-out forwards;
+}
+@keyframes spin-once {
+    from { transform: rotate(-90deg); opacity: 0; }
+    to   { transform: rotate(0deg);  opacity: 1; }
+}
+.ce-score-inner {
+    text-align: center;
+}
+
+/* ── Stat Box ──────────────────────────────────────────────────────────────── */
+.ce-stat-box {
+    text-align: center;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .ce-exam-header {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+    .ce-timer, .ce-switch-badge {
+        font-size: .75rem;
+        padding: 4px 10px;
+    }
+}

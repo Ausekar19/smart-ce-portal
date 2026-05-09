@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Test Results')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="flex-grow-1 container py-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h5 class="fw-bold mb-0" th:text="${test.title}">Test</h5>
+            <small class="text-muted" th:text="${test.subject}">Subject</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/teacher/test/{id}/results/export(id=${test.id})}"
+               class="btn btn-success btn-sm">
+                <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+            </a>
+            <a th:href="@{/teacher/dashboard}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(attempts)}" class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
+        No submissions yet for this test.
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4" th:unless="${#lists.isEmpty(attempts)}">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>PRN</th>
+                            <th>Score</th>
+                            <th>Correct</th>
+                            <th>Wrong</th>
+                            <th>Skipped</th>
+                            <th>Tab Switches</th>
+                            <th>Submitted At</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a, aStat : ${attempts}">
+                            <td th:text="${aStat.count}">1</td>
+                            <td th:text="${a.student.fullName}">Name</td>
+                            <td><code th:text="${a.student.username}">PRN</code></td>
+                            <td class="fw-bold"
+                                th:text="${#numbers.formatDecimal(a.score,1,1)} + ' / ' + ${a.test.totalMarks}">
+                                0/50
+                            </td>
+                            <td class="text-success fw-semibold" th:text="${a.correctCount}">0</td>
+                            <td class="text-danger fw-semibold" th:text="${a.wrongCount}">0</td>
+                            <td class="text-secondary" th:text="${a.unattemptedCount}">0</td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${a.tabSwitchCount > 0} ? 'bg-warning text-dark' : 'bg-light text-muted'"
+                                      th:text="${a.tabSwitchCount}">0</span>
+                            </td>
+                            <td>
+                                <small th:text="${a.endTime != null ?
+                                    #temporals.format(a.endTime,'dd MMM, hh:mm a') : '—'}">
+                                </small>
+                            </td>
+                            <td>
+                                <span th:if="${a.autoSubmitted}"
+                                      class="badge bg-danger">Auto-submitted</span>
+                                <span th:unless="${a.autoSubmitted}"
+                                      class="badge bg-success">Manual</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>

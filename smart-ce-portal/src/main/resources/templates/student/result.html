@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('My Result')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="flex-grow-1 container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-5 text-center">
+
+                    <!-- Icon -->
+                    <div th:if="${attempt.autoSubmitted}">
+                        <div class="fs-1 text-danger mb-2">🚫</div>
+                        <h4 class="text-danger fw-bold">Auto-Submitted</h4>
+                        <p class="text-muted">Exam was auto-submitted due to tab switch violations.</p>
+                    </div>
+                    <div th:unless="${attempt.autoSubmitted}">
+                        <div class="fs-1 mb-2">✅</div>
+                        <h4 class="text-success fw-bold">Exam Submitted!</h4>
+                        <p class="text-muted">Your responses have been recorded.</p>
+                    </div>
+
+                    <h5 class="fw-bold mt-2" th:text="${test.title}">Test Title</h5>
+                    <small class="text-muted" th:text="${test.subject}">Subject</small>
+
+                    <hr class="my-4"/>
+
+                    <!-- Score Ring -->
+                    <div class="ce-score-ring mx-auto mb-4">
+                        <div class="ce-score-inner">
+                            <div class="fs-2 fw-bold text-primary"
+                                 th:text="${#numbers.formatDecimal(attempt.score,1,1)}">0</div>
+                            <small class="text-muted">
+                                / <span th:text="${test.totalMarks}">50</span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-4">
+                            <div class="ce-stat-box bg-success bg-opacity-10 rounded-3 p-3">
+                                <div class="fw-bold text-success fs-4"
+                                     th:text="${attempt.correctCount}">0</div>
+                                <small class="text-muted">Correct</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="ce-stat-box bg-danger bg-opacity-10 rounded-3 p-3">
+                                <div class="fw-bold text-danger fs-4"
+                                     th:text="${attempt.wrongCount}">0</div>
+                                <small class="text-muted">Wrong</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="ce-stat-box bg-secondary bg-opacity-10 rounded-3 p-3">
+                                <div class="fw-bold text-secondary fs-4"
+                                     th:text="${attempt.unattemptedCount}">0</div>
+                                <small class="text-muted">Skipped</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-muted small mb-4">
+                        <i class="bi bi-eye me-1"></i>
+                        Tab switches recorded:
+                        <strong th:text="${attempt.tabSwitchCount}">0</strong>
+                        / <span th:text="${3}">3</span>
+                    </div>
+
+                    <a th:href="@{/student/dashboard}" class="btn btn-primary px-5 py-2">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+</body>
+</html>
