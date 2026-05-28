@@ -23,14 +23,25 @@ public interface ExamTestRepository extends JpaRepository<ExamTest, Long> {
      * Upcoming tests that the given student has NOT yet attempted.
      */
     @Query("""
-        SELECT t FROM ExamTest t
-        WHERE t.scheduledDateTime > :now
-        AND t.id NOT IN (
-            SELECT a.test.id FROM TestAttempt a
-            WHERE a.student = :student AND a.submitted = true
-        )
-        ORDER BY t.scheduledDateTime ASC
-    """)
+    	    SELECT t FROM ExamTest t
+    	    WHERE t.scheduledDateTime > :now
+
+    	    AND t.department = :#{#student.department}
+
+    	    AND t.programCode = :#{#student.programCode}
+
+    	    AND t.division = :#{#student.division}
+    		
+    		AND t.classYear = :#{#student.classYear}
+    		
+    	    AND t.id NOT IN (
+    	        SELECT a.test.id FROM TestAttempt a
+    	        WHERE a.student = :student
+    	        AND a.submitted = true
+    	    )
+
+    	    ORDER BY t.scheduledDateTime ASC
+    	""")
     List<ExamTest> findUpcomingTestsForStudent(@Param("student") User student,
                                                @Param("now") LocalDateTime now);
 

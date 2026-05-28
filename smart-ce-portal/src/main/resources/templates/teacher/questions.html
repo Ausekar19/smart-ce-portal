@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Manage Questions')}"></head>
@@ -6,25 +7,116 @@
 
 <main class="flex-grow-1 container py-4">
 
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
         <div>
             <h5 class="fw-bold mb-0" th:text="${test.title}">Test Title</h5>
             <small class="text-muted" th:text="${test.subject}">Subject</small>
         </div>
-        <div class="d-flex gap-2">
-            <span class="badge bg-primary bg-opacity-10 text-primary py-2 px-3">
-                <i class="bi bi-question-circle me-1"></i>
-                <span th:text="${#lists.size(questions)}">0</span> Questions
-            </span>
-            <a th:href="@{/teacher/dashboard}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-1"></i> Dashboard
-            </a>
-        </div>
+        <a th:href="@{/teacher/dashboard}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
     </div>
 
+    <!-- Flash messages -->
     <div th:if="${msg}" class="alert alert-success alert-dismissible fade show">
         <span th:text="${msg}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Progress Tracker -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body py-3 px-4">
+            <div class="row g-3 align-items-center">
+
+                <!-- Questions progress -->
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-semibold small">Questions Added</span>
+                        <span class="fw-bold small">
+                            <span th:text="${addedQ}">0</span>
+                            /
+                            <span th:text="${test.totalQuestions}">0</span>
+                        </span>
+                    </div>
+
+                   <div class="progress" style="height:10px;">
+    <div class="progress-bar bg-primary"
+         th:style="'width:' + ${test.totalQuestions > 0 ? (addedQ * 100 / test.totalQuestions) : 0} + '%'">
+    </div>
+</div>
+
+                    <div class="mt-1 small"
+                         th:classappend="${remainingQ == 0} ? 'text-success fw-bold' : 'text-muted'">
+
+                        <span th:if="${remainingQ > 0}"
+                              th:text="${remainingQ} + ' question(s) still needed'">
+                        </span>
+
+                        <span th:if="${remainingQ == 0}">
+                            ✅ All questions added
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Marks progress -->
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-semibold small">Marks Assigned</span>
+                        <span class="fw-bold small">
+                            <span th:text="${usedMarks}">0</span>
+                            /
+                            <span th:text="${test.totalMarks}">0</span>
+                        </span>
+                    </div>
+
+                    <div class="progress" style="height:10px;">
+    <div class="progress-bar"
+         th:classappend="${remainingMarks == 0} ? 'bg-success' :
+                         (${remainingMarks < 0} ? 'bg-danger' : 'bg-warning')"
+         th:style="'width:' + ${test.totalMarks > 0 ? (usedMarks * 100 / test.totalMarks) : 0} + '%'">
+    </div>
+</div>
+
+                   <div class="mt-1 small">
+
+    <span th:if="${remainingMarks > 0}"
+          class="text-muted"
+          th:text="${remainingMarks} + ' mark(s) remaining to assign'">
+    </span>
+
+    <span th:if="${remainingMarks == 0}"
+          class="text-success fw-bold">
+        ✅ Marks fully assigned
+    </span>
+
+    <span th:if="${remainingMarks < 0}"
+          class="text-danger fw-bold"
+          th:text="'⚠️ Exceeded by ' + (-remainingMarks) + ' mark(s)!'">
+    </span>
+
+</div>
+
+            </div>
+
+            <!-- Completion banner -->
+            <div th:if="${limitHit}"
+                 class="alert alert-success mb-0 mt-3 py-2 text-center">
+
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Test is complete!</strong>
+
+                All <span th:text="${test.totalQuestions}">0</span> questions added
+                and all <span th:text="${test.totalMarks}">0</span> marks assigned.
+
+                Students can now attempt this test.
+            </div>
+        </div>
     </div>
 
     <div class="row g-4">
@@ -32,103 +124,263 @@
         <!-- Add Question Form -->
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top:80px;">
-                <div class="card-header bg-warning text-dark border-0 rounded-top-4 py-3 px-4">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i>Add Question</h6>
+
+                <div class="card-header border-0 rounded-top-4 py-3 px-4"
+                     th:classappend="${limitHit} ? 'bg-secondary text-white' : 'bg-warning text-dark'">
+
+                    <h6 class="mb-0 fw-bold">
+                        <i class="bi bi-plus-circle me-2"></i>
+
+                        <span th:if="${!limitHit}">Add Question</span>
+                        <span th:if="${limitHit}">No More Questions Allowed</span>
+                    </h6>
                 </div>
+
                 <div class="card-body p-4">
-                    <form th:action="@{/teacher/test/{id}/questions/add(id=${test.id})}"
-                          method="post">
+
+                    <!-- Blocked state -->
+                    <div th:if="${limitHit}" class="text-center py-4 text-muted">
+                        <i class="bi bi-lock-fill fs-1 d-block mb-2 opacity-25"></i>
+
+                        <p class="mb-0">
+                            You have added all
+                            <strong th:text="${test.totalQuestions}">0</strong>
+                            questions and used all
+                            <strong th:text="${test.totalMarks}">0</strong>
+                            marks.
+                        </p>
+                    </div>
+
+                    <!-- Active form -->
+                    <form th:unless="${limitHit}"
+      th:action="@{/teacher/test/{id}/questions/add(id=${test.id})}"
+      method="post"
+      enctype="multipart/form-data">
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Question Text</label>
-                            <textarea name="questionText" class="form-control" rows="3"
-                                      placeholder="Enter your question here..." required></textarea>
+                            <textarea name="questionText"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Type your question here..."
+                                      required></textarea>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label fw-semibold">Option A</label>
-                            <input type="text" name="optionA" class="form-control" required/>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label fw-semibold">Option B</label>
-                            <input type="text" name="optionB" class="form-control" required/>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label fw-semibold">Option C</label>
-                            <input type="text" name="optionC" class="form-control" required/>
-                        </div>
+<div class="mb-3">
+
+    <label class="form-label fw-semibold">
+        Question Image
+    </label>
+
+    <input type="file"
+           name="imageFile"
+           class="form-control"
+           accept="image/*">
+
+    <small class="text-muted">
+        Optional: Upload diagram, screenshot, graph, etc.
+    </small>
+
+</div>
+<div id="optionsContainer">
+
+    <div class="mb-2 option-item">
+
+        <label class="form-label fw-semibold">
+            Option 1
+        </label>
+
+        <div class="input-group">
+
+            <input type="text"
+                   name="optionTexts"
+                   class="form-control"
+                   placeholder="Enter option"
+                   required>
+
+            <div class="input-group-text">
+
+                <input type="radio"
+                       name="correctOption"
+                       value="0"
+                       required>
+
+                <span class="ms-1 small">
+                    Correct
+                </span>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-2 option-item">
+
+        <label class="form-label fw-semibold">
+            Option 2
+        </label>
+
+        <div class="input-group">
+
+            <input type="text"
+                   name="optionTexts"
+                   class="form-control"
+                   placeholder="Enter option"
+                   required>
+
+            <div class="input-group-text">
+
+                <input type="radio"
+                       name="correctOption"
+                       value="1"
+                       required>
+
+                <span class="ms-1 small">
+                    Correct
+                </span>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<button type="button"
+        class="btn btn-outline-primary btn-sm mb-3"
+        onclick="addOption()">
+
+    <i class="bi bi-plus-circle me-1"></i>
+    Add Option
+
+</button>
+
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Option D</label>
-                            <input type="text" name="optionD" class="form-control" required/>
+                            <label class="form-label fw-semibold">
+                                Marks for this question
+                                <span class="badge bg-warning text-dark ms-1">
+                                    Max: <span th:text="${remainingMarks}">0</span>
+                                </span>
+                            </label>
+
+                            <input type="number"
+                                   name="marks"
+                                   class="form-control"
+                                   min="1"
+                                   th:max="${remainingMarks}"
+                                   required/>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Correct Answer</label>
-                            <select name="correctOption" class="form-select" required>
-                                <option value="">-- Select --</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Marks</label>
-                            <input type="number" name="marks" class="form-control"
-                                   value="1" min="1" max="10"/>
-                        </div>
+
                         <button type="submit" class="btn btn-warning w-100 fw-semibold">
-                            <i class="bi bi-plus me-1"></i> Add Question
+                            <i class="bi bi-plus me-1"></i>
+                            Add Question
                         </button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Existing Questions -->
+        <!-- Question List -->
         <div class="col-lg-7">
-            <div th:if="${#lists.isEmpty(questions)}" class="text-center text-muted py-5">
+
+            <div th:if="${#lists.isEmpty(questions)}"
+                 class="text-center text-muted py-5">
+
                 <i class="bi bi-journal-x fs-1 d-block mb-2 opacity-25"></i>
-                No questions yet. Add your first question on the left.
+                No questions yet. Add your first one.
             </div>
 
             <div th:each="q, qStat : ${questions}"
                  class="card border-0 shadow-sm rounded-4 mb-3">
+
                 <div class="card-body p-4">
+
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <span class="badge bg-primary bg-opacity-10 text-primary">
                             Q<span th:text="${qStat.count}">1</span>
                         </span>
-                        <form th:action="@{/teacher/test/{tid}/questions/{qid}/delete(tid=${test.id},qid=${q.id})}"
-                              method="post"
-                              onsubmit="return confirm('Delete this question?')">
-                            <button class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
+
+                        <span class="badge bg-warning text-dark">
+                            <span th:text="${q.marks}">1</span> mark(s)
+                        </span>
                     </div>
-                    <p class="fw-semibold mb-3" th:text="${q.questionText}">Question</p>
-                    <div class="row g-2">
-                        <div class="col-6" th:each="opt : ${ {'A','B','C','D'} }">
-                            <div class="ce-option-display"
-                                 th:classappend="${q.correctOption.name() == opt} ? 'ce-option-correct' : ''">
-                                <span class="fw-bold me-1" th:text="${opt}">A</span>
-                                <span th:switch="${opt}">
-                                    <span th:case="'A'" th:text="${q.optionA}">Option A</span>
-                                    <span th:case="'B'" th:text="${q.optionB}">Option B</span>
-                                    <span th:case="'C'" th:text="${q.optionC}">Option C</span>
-                                    <span th:case="'D'" th:text="${q.optionD}">Option D</span>
-                                </span>
-                                <i th:if="${q.correctOption.name() == opt}"
-                                   class="bi bi-check-circle-fill text-success ms-auto"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-2 small text-muted">
-                        Marks: <strong th:text="${q.marks}">1</strong>
-                    </div>
+
+                    <p class="fw-semibold mb-3" th:text="${q.questionText}">
+                        Question
+                    </p>
+                    <div class="d-flex gap-2">
+
+    <a th:href="@{/teacher/question/{id}/edit(id=${q.id})}"
+       class="btn btn-sm btn-outline-primary">
+
+        <i class="bi bi-pencil-square me-1"></i>
+        Edit Question
+    </a>
+
+    <form th:action="@{/teacher/test/{testId}/questions/{qId}/delete(testId=${test.id},qId=${q.id})}"
+      method="post"
+      onsubmit="return confirm('Delete this question?')">
+
+    <button type="submit"
+            class="btn btn-sm btn-outline-danger">
+
+        <i class="bi bi-trash me-1"></i>
+        Delete
+    </button>
+</form>
+
+</div>
                 </div>
             </div>
         </div>
     </div>
 </main>
+
 <footer th:replace="~{layout :: footer}"></footer>
+<script>
+
+let optionCount = 2;
+
+function addOption() {
+
+    optionCount++;
+
+    const container =
+        document.getElementById('optionsContainer');
+
+    const div = document.createElement('div');
+
+    div.className = 'mb-2 option-item';
+
+    div.innerHTML = `
+        <label class="form-label fw-semibold">
+            Option ${optionCount}
+        </label>
+
+        <div class="input-group">
+
+            <input type="text"
+                   name="optionTexts"
+                   class="form-control"
+                   placeholder="Enter option"
+                   required>
+
+            <div class="input-group-text">
+
+                <input type="radio"
+                       name="correctOption"
+                       value="${optionCount - 1}"
+                       required>
+
+                <span class="ms-1 small">
+                    Correct
+                </span>
+
+            </div>
+        </div>
+    `;
+
+    container.appendChild(div);
+}
+
+</script>
 </body>
 </html>
+

@@ -118,7 +118,132 @@
             </div>
         </div>
     </div>
+<!-- Students Table -->
+<div class="card border-0 shadow-sm rounded-4 mt-4">
 
+    <div class="card-header bg-white border-0 py-3 px-4 rounded-top-4">
+
+        <h6 class="mb-0 fw-bold">
+
+            <i class="bi bi-mortarboard me-2"></i>
+            Students
+
+        </h6>
+
+    </div>
+
+    <div class="card-body p-0">
+
+        <div th:if="${#lists.isEmpty(students)}"
+             class="text-center py-4 text-muted">
+
+            No students yet.
+
+        </div>
+
+        <div class="table-responsive"
+             th:unless="${#lists.isEmpty(students)}">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th>Name</th>
+
+                        <th>PRN</th>
+
+                        <th>Department</th>
+
+                        <th>Course</th>
+
+                        <th>Year</th>
+
+                        <th>Division</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr th:each="s : ${students}">
+
+                        <td th:text="${s.fullName}">
+                            Name
+                        </td>
+
+                        <td>
+                            <code th:text="${s.username}">
+                                PRN
+                            </code>
+                        </td>
+
+                        <td th:text="${s.department}">
+                            Dept
+                        </td>
+
+                        <td th:text="${s.programCode}">
+                            Course
+                        </td>
+
+                        <td th:text="${s.classYear}">
+                            FY
+                        </td>
+
+                        <td th:text="${s.division}">
+                            A
+                        </td>
+
+                        <td>
+
+                            <form th:action="@{/admin/students/{id}/promote(id=${s.id})}"
+                                  method="post"
+                                  style="display:inline;">
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-warning">
+
+                                    Promote
+
+                                </button>
+
+                            </form>
+                            <form th:action="@{/admin/users/{id}/reset-password(id=${s.id})}"
+      method="post"
+      class="mt-2">
+
+    <input type="password"
+           name="newPassword"
+           class="form-control form-control-sm mb-1"
+           placeholder="New Password"
+           required>
+
+    <button type="submit"
+            class="btn btn-sm btn-dark w-100">
+
+        Reset Password
+
+    </button>
+
+</form>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
 </main>
 <footer th:replace="~{layout :: footer}"></footer>
 </body>

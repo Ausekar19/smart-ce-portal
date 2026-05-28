@@ -53,4 +53,21 @@ public class UserService {
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
+    public User getUserById(Long id) {
+
+        return userRepository.findById(id)
+                .orElseThrow();
+    }
+
+    public void updateUser(User user) {
+
+        userRepository.save(user);
+    }
+    public void changePassword(User user,
+            String newPassword) {
+
+user.setPassword(passwordEncoder.encode(newPassword));
+
+userRepository.save(user);
+}
 }

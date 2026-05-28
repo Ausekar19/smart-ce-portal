@@ -16,47 +16,123 @@
 </head>
 <body>
 
-<!-- ── Navbar Fragment ───────────────────────────────────────────────────── -->
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark ce-navbar px-4">
-    <a class="navbar-brand fw-bold" href="#">
-        <i class="bi bi-mortarboard-fill me-2"></i>Smart CE Portal
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav ms-auto align-items-center gap-2">
-            <!-- Student nav -->
-            <li class="nav-item" sec:authorize="hasRole('STUDENT')">
-                <a class="nav-link" th:href="@{/student/dashboard}">
-                    <i class="bi bi-grid"></i> Dashboard
-                </a>
-            </li>
-            <!-- Teacher nav -->
-            <li class="nav-item" sec:authorize="hasRole('TEACHER')">
-                <a class="nav-link" th:href="@{/teacher/dashboard}">
-                    <i class="bi bi-grid"></i> Dashboard
-                </a>
-            </li>
-            <!-- Admin nav -->
-            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                <a class="nav-link" th:href="@{/admin/dashboard}">
-                    <i class="bi bi-speedometer2"></i> Admin
-                </a>
-            </li>
-            <!-- Logout -->
-            <li class="nav-item" sec:authorize="isAuthenticated()">
-                <form th:action="@{/logout}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-outline-light btn-sm">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </button>
-                </form>
-            </li>
-        </ul>
-    </div>
-</nav>
+<<!-- ── Premium Navbar ─────────────────────────────────────────────────── -->
+<nav th:fragment="navbar"
+     class="navbar navbar-expand-lg navbar-dark px-4 py-3 shadow-sm ce-navbar">
 
+    <div class="container-fluid">
+
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center gap-3 fw-bold"
+           href="#">
+
+            <img th:src="@{/images/fc-image.png}"
+                 alt="Fergusson Logo"
+                 width="124"
+                 height="124"
+                 class="rounded-circle shadow-sm bg-white p-1">
+
+            <div class="d-flex flex-column lh-sm">
+
+                <span class="fw-bold fs-5 text-white">
+                    Smart CE Portal
+                </span>
+
+                <small class="text-light opacity-75"
+                       style="font-size: 12px;">
+
+                    Fergusson College, Pune
+
+                </small>
+
+            </div>
+
+        </a>
+
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler border-0 shadow-none"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navMenu">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <!-- Nav Links -->
+        <div class="collapse navbar-collapse" id="navMenu">
+
+            <ul class="navbar-nav ms-auto align-items-center gap-2">
+
+                <!-- Student -->
+                <li class="nav-item"
+                    sec:authorize="hasRole('STUDENT')">
+
+                    <a class="nav-link ce-nav-link"
+                       th:href="@{/student/dashboard}">
+
+                        <i class="bi bi-grid me-1"></i>
+                        Dashboard
+
+                    </a>
+
+                </li>
+
+                <!-- Teacher -->
+                <li class="nav-item"
+                    sec:authorize="hasRole('TEACHER')">
+
+                    <a class="nav-link ce-nav-link"
+                       th:href="@{/teacher/dashboard}">
+
+                        <i class="bi bi-grid me-1"></i>
+                        Dashboard
+
+                    </a>
+
+                </li>
+
+                <!-- Admin -->
+                <li class="nav-item"
+                    sec:authorize="hasRole('ADMIN')">
+
+                    <a class="nav-link ce-nav-link"
+                       th:href="@{/admin/dashboard}">
+
+                        <i class="bi bi-speedometer2 me-1"></i>
+                        Admin
+
+                    </a>
+
+                </li>
+
+                <!-- Logout -->
+                <li class="nav-item"
+                    sec:authorize="isAuthenticated()">
+
+                    <form th:action="@{/logout}"
+                          method="post"
+                          class="d-inline">
+
+                        <button type="submit"
+                                class="btn btn-light btn-sm px-3 rounded-pill fw-semibold">
+
+                            <i class="bi bi-box-arrow-right me-1"></i>
+                            Logout
+
+                        </button>
+
+                    </form>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
 <!-- ── Footer Fragment ───────────────────────────────────────────────────── -->
 <footer th:fragment="footer" class="ce-footer text-center py-3 mt-auto">
     <small class="text-muted">

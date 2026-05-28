@@ -83,6 +83,24 @@ public class ExamService {
     @Transactional
     public TestAttempt startAttempt(User student, ExamTest test) {
         Optional<TestAttempt> existing = testAttemptRepository.findByStudentAndTest(student, test);
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime start = test.getScheduledDateTime();
+
+        LocalDateTime end =
+                start.plusMinutes(test.getDurationMinutes());
+
+        if (now.isBefore(start)) {
+
+            throw new RuntimeException(
+                    "Test has not started yet.");
+        }
+
+        if (now.isAfter(end)) {
+
+            throw new RuntimeException(
+                    "Test time window has ended.");
+        }
         if (existing.isPresent()) {
             return existing.get();
         }
@@ -137,17 +155,32 @@ public class ExamService {
 
             String key = String.valueOf(q.getId());
             if (answersMap.containsKey(key) && !answersMap.get(key).isBlank()) {
-                Question.OptionKey selected = Question.OptionKey.valueOf(answersMap.get(key));
-                sa.setSelectedOption(selected);
-                if (selected == q.getCorrectOption()) {
-                    sa.setCorrect(true);
-                    score += q.getMarks();
-                    correct++;
-                } else {
-                    sa.setCorrect(false);
-                    score -= test.getNegativeMarking();
-                    wrong++;
-                }
+            	String selected = answersMap.get(key);
+
+            	sa.setSelectedOption(selected);
+
+            	boolean isCorrect = q.getOptions().stream()
+            	        .anyMatch(opt ->
+            	                opt.isCorrect() &&
+            	                opt.getOptionText().equals(selected));
+
+            	if (isCorrect) {
+
+            	    sa.setCorrect(true);
+
+            	    score += q.getMarks();
+
+            	    correct++;
+
+            	} else {
+
+            	    sa.setCorrect(false);
+
+            	    score -= test.getNegativeMarking();
+
+            	    wrong++;
+            	}
+                
             } else {
                 unattempted++;
             }

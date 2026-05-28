@@ -21,12 +21,32 @@ public class ExamTest {
     @Column(nullable = false)
     private String title;
 
+    
+
     @Column(nullable = false)
     private String subject;
 
+    private String department;
+
+    private String programCode;
+
+    private String division;
+    
+    private String classYear;
+    
+    private boolean showResult = true;
+
+    private boolean discloseAnswers = false;
+    
     private int durationMinutes;
+
+    /** Total marks the entire test should sum up to */
     private int totalMarks;
-    private double negativeMarking;   // e.g. 0.25 per wrong answer
+
+    /** Exactly how many questions this test must have */
+    private int totalQuestions;
+
+    private double negativeMarking;
 
     @Column(nullable = false)
     private LocalDateTime scheduledDateTime;
@@ -36,13 +56,28 @@ public class ExamTest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
-    private User createdBy;           // Teacher who created this test
+    private User createdBy;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /** Marks already assigned across all saved questions */
+    public int getUsedMarks() {
+        return questions.stream().mapToInt(Question::getMarks).sum();
+    }
+
+    /** Marks still available to assign */
+    public int getRemainingMarks() {
+        return totalMarks - getUsedMarks();
+    }
+
+    /** Questions still allowed to be added */
+    public int getRemainingQuestions() {
+        return totalQuestions - questions.size();
+    }
 
     public enum TestStatus {
         SCHEDULED, PUBLISHED, COMPLETED, CANCELLED

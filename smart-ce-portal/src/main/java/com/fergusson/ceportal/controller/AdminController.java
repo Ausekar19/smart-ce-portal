@@ -52,6 +52,49 @@ public class AdminController {
         ra.addFlashAttribute("msg", "User deleted.");
         return "redirect:/admin/users";
     }
+    @PostMapping("/students/{id}/promote")
+    public String promoteStudent(@PathVariable Long id,
+                                 RedirectAttributes ra) {
+
+        User student = userService.getUserById(id);
+
+        if ("FY".equals(student.getClassYear())) {
+
+            student.setClassYear("SY");
+
+        } else if ("SY".equals(student.getClassYear())) {
+
+            student.setClassYear("TY");
+
+        } else {
+
+            ra.addFlashAttribute("error",
+                    "Student already in TY.");
+
+            return "redirect:/admin/dashboard";
+        }
+
+        userService.updateUser(student);
+
+        ra.addFlashAttribute("msg",
+                "Student promoted successfully.");
+
+        return "redirect:/admin/dashboard";
+    }
+    @PostMapping("/users/{id}/reset-password")
+    public String resetPassword(@PathVariable Long id,
+                                @RequestParam String newPassword,
+                                RedirectAttributes ra) {
+
+        User user = userService.getUserById(id);
+
+        userService.changePassword(user, newPassword);
+
+        ra.addFlashAttribute("msg",
+                "Password reset successfully.");
+
+        return "redirect:/admin/dashboard";
+    }
 
     // Admin can register a teacher directly
     @GetMapping("/teacher/new")

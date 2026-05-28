@@ -26,6 +26,14 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+    private String department;
+
+    private String programCode;
+    
+    private String division;
+    
+    private String classYear;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;

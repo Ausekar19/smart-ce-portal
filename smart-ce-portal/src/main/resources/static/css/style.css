@@ -14,7 +14,27 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: #f0f2f5;
+    background:
+        radial-gradient(circle at top left,
+            rgba(13,110,253,0.08),
+            transparent 25%),
+
+        radial-gradient(circle at bottom right,
+            rgba(255,193,7,0.10),
+            transparent 25%),
+
+        linear-gradient(135deg,
+            #f4f7fb 0%,
+            #eef3f9 100%);
+
+    background-attachment: fixed;
+
+    min-height: 100vh;
+
+    position: relative;
+
+    overflow-x: hidden;
+    isolation: isolate;
 }
 
 /* ── Navbar ────────────────────────────────────────────────────────────────── */
@@ -25,10 +45,46 @@ body {
 
 /* ── Welcome Banner ────────────────────────────────────────────────────────── */
 .ce-welcome-banner {
-    background: linear-gradient(135deg, var(--ce-primary), #4a90d9);
-    min-height: 90px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(10,25,47,0.95),
+            rgba(13,110,253,0.90)
+        );
+
+    border-radius: 24px;
+
+    min-height: 110px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 14px 40px rgba(13,110,253,0.18);
 }
 
+/* decorative glow */
+.ce-welcome-banner::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 240px;
+
+    height: 240px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255,255,255,0.08);
+
+    top: -120px;
+
+    right: -60px;
+}
 /* ── Icon Circle ───────────────────────────────────────────────────────────── */
 .ce-icon-circle {
     width: 56px;
@@ -43,10 +99,51 @@ body {
 
 /* ── Cards ─────────────────────────────────────────────────────────────────── */
 .card {
-    transition: box-shadow .2s ease;
+
+    background: rgba(255,255,255,0.72);
+
+    backdrop-filter: blur(14px);
+
+    -webkit-backdrop-filter: blur(14px);
+
+    border: 1px solid rgba(255,255,255,0.35);
+
+    box-shadow:
+        0 8px 32px rgba(31,38,135,0.08);
+overflow: hidden;
+
+position: relative;
+    transition:
+        transform .22s ease,
+        box-shadow .22s ease;
+
+    border-radius: 20px !important;
 }
+
 .card:hover {
-    box-shadow: 0 6px 24px rgba(0,0,0,.09) !important;
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 14px 34px rgba(31,38,135,0.14);
+
+}
+.card::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0.28),
+            transparent 40%
+        );
+
+    pointer-events: none;
 }
 
 /* ── Footer ────────────────────────────────────────────────────────────────── */
@@ -207,4 +304,197 @@ body {
         font-size: .75rem;
         padding: 4px 10px;
     }
+    /* ── Premium Nav Links ───────────────────────────────────────────── */
+
+.ce-nav-link {
+
+    position: relative;
+
+    padding: 8px 14px !important;
+
+    border-radius: 10px;
+
+    transition:
+        background .2s ease,
+        transform .2s ease,
+        color .2s ease;
+
+    font-weight: 500;
+}
+
+.ce-nav-link:hover {
+
+    background: rgba(255,255,255,0.12);
+
+    transform: translateY(-1px);
+
+    color: #fff !important;
+}
+
+/* ── Glass Navbar ───────────────────────────────────────────────── */
+
+.ce-navbar {
+
+    background:
+        linear-gradient(135deg,
+            rgba(10,25,47,0.92),
+            rgba(13,110,253,0.82));
+
+    backdrop-filter: blur(16px);
+
+    -webkit-backdrop-filter: blur(16px);
+
+    border-bottom:
+        1px solid rgba(255,255,255,0.08);
+}
+/* ── Premium Form UI ───────────────────────────────────────────── */
+
+.form-control,
+.form-select {
+
+    background: rgba(255,255,255,0.88) !important;
+
+    border: 1px solid rgba(13,110,253,0.10) !important;
+
+    border-radius: 14px !important;
+
+    padding: 13px 16px !important;
+
+    font-size: .95rem;
+
+    transition:
+        all .22s ease !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+
+    background: #fff !important;
+
+    border-color: rgba(13,110,253,0.45) !important;
+
+    box-shadow:
+        0 0 0 5px rgba(13,110,253,0.10) !important;
+
+    transform: translateY(-1px);
+}
+
+.form-control:focus,
+.form-select:focus {
+
+    border-color: rgba(13,110,253,0.5);
+
+    box-shadow:
+        0 0 0 4px rgba(13,110,253,0.08) !important;
+
+    transform: translateY(-1px);
+}
+
+/* ── Premium Buttons ───────────────────────────────────────────── */
+.btn {
+
+    border-radius: 14px !important;
+
+    font-weight: 600 !important;
+
+    letter-spacing: .2px;
+
+    transition:
+        all .2s ease !important;
+}
+
+.btn:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 24px rgba(0,0,0,0.12);
+}
+
+/* ── Floating Cards ────────────────────────────────────────────── */
+
+.card {
+
+    animation: floatCard .5s ease;
+}
+
+@keyframes floatCard {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(10px)
+            scale(.98);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+/* ── Background Decorative Blobs ───────────────────────────── */
+
+body::before,
+body::after {
+
+    content: "";
+
+    position: fixed;
+
+    width: 420px;
+
+    height: 420px;
+
+    border-radius: 50%;
+
+    z-index: -1;
+
+    filter: blur(110px);
+
+    opacity: .35;
+}
+
+body::before {
+
+    top: -120px;
+
+    left: -120px;
+
+    background: #0d6efd;
+}
+
+body::after {
+
+    bottom: -120px;
+
+    right: -120px;
+
+    background: #ffc107;
+}
+/* ── Floating Login Animation ───────────────────────────── */
+
+@keyframes softFloat {
+
+    0%, 100% {
+
+        transform: translateY(0px);
+    }
+
+    50% {
+
+        transform: translateY(-4px);
+    }
+}
+
+.ce-auth-card {
+
+    animation:
+        softFloat 5s ease-in-out infinite;
+}
 }

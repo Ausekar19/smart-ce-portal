@@ -17,12 +17,18 @@
                 </div>
                 <div class="card-body p-4">
 
-                    <div th:if="${msg}" class="alert alert-success py-2" th:text="${msg}"></div>
+                    <!-- Flash messages -->
+                    <div th:if="${msg}"   class="alert alert-success py-2" th:text="${msg}"></div>
+                    <div th:if="${error}" class="alert alert-danger  py-2" th:text="${error}"></div>
 
-                    <form th:action="${test.id == null} ? @{/teacher/test/new} : @{/teacher/test/{id}/edit(id=${test.id})}"
+                    <form th:action="${test.id == null}
+                                     ? @{/teacher/test/new}
+                                     : @{/teacher/test/{id}/edit(id=${test.id})}"
                           method="post">
 
                         <div class="row g-3">
+
+                            <!-- Test Title -->
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Test Title</label>
                                 <input type="text" name="title" class="form-control"
@@ -30,13 +36,116 @@
                                        placeholder="e.g. DBMS Unit Test 1" required/>
                             </div>
 
+                            <!-- Subject -->
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Subject</label>
                                 <input type="text" name="subject" class="form-control"
                                        th:value="${test.subject}"
                                        placeholder="e.g. Database Management Systems" required/>
                             </div>
+<div class="mb-3">
+    <label class="form-label fw-semibold">
+        Department
+    </label>
 
+    <select name="department"
+            class="form-select"
+            required>
+
+        <option value="">Select Department</option>
+
+        <option value="Computer Science">
+            Computer Science
+        </option>
+
+        <option value="Data Science">
+            Data Science
+        </option>
+
+        <option value="Biotechnology">
+            Biotechnology
+        </option>
+
+    </select>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-semibold">
+        Program Code
+    </label>
+
+    <select name="programCode"
+            class="form-select"
+            required>
+
+        <option value="">Select Program</option>
+
+        <option value="BSCCSC">BSCCSC</option>
+
+        <option value="MSCCSC">MSCCSC</option>
+
+        <option value="MSCDCS">MSCDCS</option>
+
+        <option value="BSCBTH">BSCBTH</option>
+
+    </select>
+</div>
+<div class="col-md-6">
+
+    <label class="form-label fw-semibold">
+        Division
+    </label>
+
+    <select name="division"
+            class="form-select"
+            required>
+
+        <option value="">
+            Select Division
+        </option>
+
+        <option value="A">
+            A
+        </option>
+
+        <option value="B">
+            B
+        </option>
+
+    </select>
+
+</div>
+
+<div class="mb-3">
+
+    <label class="form-label fw-semibold">
+        Class / Year
+    </label>
+
+    <select name="classYear"
+            class="form-select"
+            required>
+
+        <option value="">
+            Select Year
+        </option>
+
+        <option value="FY">
+            FY
+        </option>
+
+        <option value="SY">
+            SY
+        </option>
+
+        <option value="TY">
+            TY
+        </option>
+
+    </select>
+
+</div>
+                            <!-- Duration -->
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Duration (minutes)</label>
                                 <input type="number" name="durationMinutes" class="form-control"
@@ -44,13 +153,39 @@
                                        min="5" max="180" required/>
                             </div>
 
+                            <!-- Total Questions -->
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Total Marks</label>
-                                <input type="number" name="totalMarks" class="form-control"
-                                       th:value="${test.totalMarks ?: 50}"
-                                       min="1" required/>
+                                <label class="form-label fw-semibold">
+                                    Total Questions
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" name="totalQuestions" id="totalQuestions"
+                                       class="form-control"
+                                       th:value="${test.totalQuestions ?: ''}"
+                                       placeholder="e.g. 10"
+                                       min="1" max="200" required
+                                       oninput="updateHint()"/>
+                                <div class="form-text">
+                                    Exactly this many questions must be added.
+                                </div>
                             </div>
 
+                            <!-- Total Marks -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Total Marks
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" name="totalMarks" id="totalMarks"
+                                       class="form-control"
+                                       th:value="${test.totalMarks ?: ''}"
+                                       placeholder="e.g. 50"
+                                       min="1" required
+                                       oninput="updateHint()"/>
+                                <div class="form-text" id="marksHint"></div>
+                            </div>
+
+                            <!-- Negative Marking -->
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">
                                     Negative Marking
@@ -59,39 +194,103 @@
                                 <input type="number" name="negativeMarking" class="form-control"
                                        th:value="${test.negativeMarking ?: 0.25}"
                                        step="0.25" min="0" max="5"/>
+                                <div class="form-text">Set to 0 for no negative marking.</div>
                             </div>
+                            <div class="col-md-6">
 
+    <label class="form-label fw-semibold">
+        Show Result After Submission
+    </label>
+
+    <select name="showResult"
+            class="form-select">
+
+        <option value="true">
+            Yes
+        </option>
+
+        <option value="false">
+            No
+        </option>
+
+    </select>
+
+</div>
+
+<div class="col-md-6">
+
+    <label class="form-label fw-semibold">
+        Disclose Correct Answers
+    </label>
+
+    <select name="discloseAnswers"
+            class="form-select">
+
+        <option value="false">
+            No
+        </option>
+
+        <option value="true">
+            Yes
+        </option>
+
+    </select>
+
+</div>
+
+                            <!-- Schedule Date & Time -->
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Schedule Date &amp; Time</label>
                                 <input type="datetime-local" name="scheduledDateTimeStr"
                                        class="form-control"
                                        th:value="${test.scheduledDateTime != null ?
-                                           #temporals.format(test.scheduledDateTime,'yyyy-MM-dd''T''HH:mm') : ''}"
+                                           #temporals.format(test.scheduledDateTime,
+                                           'yyyy-MM-dd''T''HH:mm') : ''}"
                                        required/>
                             </div>
 
+                            <!-- Status (edit mode only) -->
                             <div class="col-md-6" th:unless="${test.id == null}">
                                 <label class="form-label fw-semibold">Status</label>
                                 <select name="status" class="form-select">
                                     <option value="SCHEDULED"
-                                            th:selected="${test.status?.name() == 'SCHEDULED'}">Scheduled</option>
+                                            th:selected="${test.status?.name() == 'SCHEDULED'}">
+                                        Scheduled
+                                    </option>
                                     <option value="PUBLISHED"
-                                            th:selected="${test.status?.name() == 'PUBLISHED'}">Published</option>
+                                            th:selected="${test.status?.name() == 'PUBLISHED'}">
+                                        Published
+                                    </option>
                                     <option value="COMPLETED"
-                                            th:selected="${test.status?.name() == 'COMPLETED'}">Completed</option>
+                                            th:selected="${test.status?.name() == 'COMPLETED'}">
+                                        Completed
+                                    </option>
                                     <option value="CANCELLED"
-                                            th:selected="${test.status?.name() == 'CANCELLED'}">Cancelled</option>
+                                            th:selected="${test.status?.name() == 'CANCELLED'}">
+                                        Cancelled
+                                    </option>
                                 </select>
                             </div>
+
+                        </div><!-- /row -->
+
+                        <!-- Info box shown when both fields filled -->
+                        <div class="alert alert-info py-2 mt-3 d-none" id="summaryBox">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <span id="summaryText"></span>
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
-                            <a th:href="@{/teacher/dashboard}" class="btn btn-outline-secondary">
+                            <a th:href="@{/teacher/dashboard}"
+                               class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left me-1"></i> Cancel
                             </a>
-                            <button type="submit" class="btn btn-warning fw-semibold flex-grow-1">
+                            <button type="submit"
+                                    class="btn btn-warning fw-semibold flex-grow-1">
                                 <i class="bi bi-save me-1"></i>
-                                <span th:if="${test.id == null}">Save &amp; Add Questions</span>
+                                <span th:if="${test.id == null}">
+                                    Save &amp; Add Questions
+                                </span>
                                 <span th:unless="${test.id == null}">Update Test</span>
                             </button>
                         </div>
@@ -101,6 +300,41 @@
         </div>
     </div>
 </main>
+
 <footer th:replace="~{layout :: footer}"></footer>
+
+<script>
+    function updateHint() {
+        const q = parseInt(document.getElementById('totalQuestions').value) || 0;
+        const m = parseInt(document.getElementById('totalMarks').value) || 0;
+        const hint    = document.getElementById('marksHint');
+        const box     = document.getElementById('summaryBox');
+        const summary = document.getElementById('summaryText');
+
+        if (q > 0 && m > 0) {
+            if (m < q) {
+                hint.innerHTML =
+                    '<span class="text-danger">⚠️ Must be ≥ questions (' + q + '). ' +
+                    'Each question needs at least 1 mark.</span>';
+                box.classList.add('d-none');
+            } else {
+                const avg = (m / q).toFixed(1);
+                hint.innerHTML =
+                    '<span class="text-success">✅ Avg ' + avg +
+                    ' mark(s) per question.</span>';
+                box.classList.remove('d-none');
+                summary.textContent =
+                    'You will add exactly ' + q + ' question(s) whose marks ' +
+                    'must add up to exactly ' + m + '. Avg per question: ' + avg + '.';
+            }
+        } else {
+            hint.innerHTML = '';
+            box.classList.add('d-none');
+        }
+    }
+
+    // Run on page load in edit mode (fields already filled)
+    window.addEventListener('DOMContentLoaded', updateHint);
+</script>
 </body>
 </html>

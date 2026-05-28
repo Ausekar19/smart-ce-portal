@@ -5,6 +5,13 @@
 <nav th:replace="~{layout :: navbar}"></nav>
 
 <main class="flex-grow-1 container py-5">
+<div th:if="${resultHidden}"
+     class="alert alert-warning text-center">
+
+    Result has been hidden by the teacher.
+
+</div>
+<div th:unless="${resultHidden}">
     <div class="row justify-content-center">
         <div class="col-lg-7">
             <div class="card border-0 shadow-lg rounded-4">
@@ -76,6 +83,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </main>
 

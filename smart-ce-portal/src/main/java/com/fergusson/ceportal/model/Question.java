@@ -21,23 +21,16 @@ public class Question {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String questionText;
 
-    @Column(nullable = false)
-    private String optionA;
+   
 
-    @Column(nullable = false)
-    private String optionB;
-
-    @Column(nullable = false)
-    private String optionC;
-
-    @Column(nullable = false)
-    private String optionD;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private OptionKey correctOption;
-
+    private String imagePath;
+    @OneToMany(mappedBy = "question",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+ private java.util.List<QuestionOption> options =
+         new java.util.ArrayList<>();
+    
     private int marks = 1;   // marks per question
 
-    public enum OptionKey { A, B, C, D }
+    
 }

@@ -1,6 +1,7 @@
 package com.fergusson.ceportal.controller;
 
 import com.fergusson.ceportal.model.*;
+
 import com.fergusson.ceportal.repository.TestAttemptRepository;
 import com.fergusson.ceportal.service.ExamService;
 import com.fergusson.ceportal.service.UserService;
@@ -13,7 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,14 +52,59 @@ public class StudentController {
     public String startExam(@PathVariable Long testId,
                             @AuthenticationPrincipal UserDetails ud,
                             RedirectAttributes ra) {
+
         User student = currentUser(ud);
+
         ExamTest test = examService.findTestById(testId)
                 .orElseThrow(() -> new RuntimeException("Test not found: " + testId));
-        if (examService.hasStudentAttempted(student, test)) {
-            ra.addFlashAttribute("error", "You have already attempted this test.");
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // ❌ Prevent early access
+        if (now.isBefore(test.getScheduledDateTime())) {
+
+            DateTimeFormatter formatter =
+                    DateTimeFormatter.ofPattern("hh:mm a");
+
+            String startTime =
+                    test.getScheduledDateTime().format(formatter);
+
+            ra.addFlashAttribute(
+                    "error",
+                    "⏰ This test is not live yet. You can start the test at " + startTime
+            );
+
             return "redirect:/student/dashboard";
         }
+        // ❌ Prevent late access
+        LocalDateTime examEnd =
+                test.getScheduledDateTime()
+                        .plusMinutes(test.getDurationMinutes());
+
+        if (now.isAfter(examEnd)) {
+
+            ra.addFlashAttribute(
+                    "error",
+                    "❌ This test has already ended."
+            );
+
+            return "redirect:/student/dashboard";
+        }
+
+        // ❌ Already attempted
+        if (examService.hasStudentAttempted(student, test)) {
+
+            ra.addFlashAttribute(
+                    "error",
+                    "You have already attempted this test."
+            );
+
+            return "redirect:/student/dashboard";
+        }
+
+        // ✅ Start exam normally
         TestAttempt attempt = examService.startAttempt(student, test);
+
         return "redirect:/student/exam/" + attempt.getId();
     }
 
@@ -130,6 +177,15 @@ public class StudentController {
         model.addAttribute("attempt", attempt);
         model.addAttribute("test",    attempt.getTest());
         model.addAttribute("student", student);
+        if (!attempt.getTest().isShowResult()) {
+
+            model.addAttribute("resultHidden", true);
+
+            return "student/result";
+        }
+        model.addAttribute("showAnswers",
+                attempt.getTest().isDiscloseAnswers());
         return "student/result";
     }
+    
 }
